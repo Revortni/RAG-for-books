@@ -218,8 +218,6 @@ def run_chat_loop(rag_chain: Runnable):
 
         except Exception as e:
             print(f"An error occurred: {e}")
-            # Optionally, decide if you want to break the loop on error
-            # break
 
     print("--- Chat Ended ---")
 
