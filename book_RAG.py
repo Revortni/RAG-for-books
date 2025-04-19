@@ -30,6 +30,13 @@ VECTOR_STORE_ROOT = "./chroma_db"
 CHUNK_SIZE = 1000
 CHUNK_OVERLAP = 200
 
+
+def get_formatted_time(start, end):
+    diff = end - start
+    time_obj = datetime.timedelta(seconds=diff)
+
+    return f'{int(time_obj.total_seconds())}s'
+
 # --- Modular Functions ---
 
 
@@ -74,10 +81,9 @@ def create_and_persist_vector_store(file_path, embeddings, persist_directory):
     docs = load_pdf(file_path)
     splits = split_documents(docs, CHUNK_SIZE, CHUNK_OVERLAP)
     end_time = time.perf_counter()
-    execution_time = end_time - start_time
 
-    logger.info('Time taken to load and split files: %s', {
-                str(datetime.timedelta(seconds=execution_time))})
+    logger.info('Time taken to load and split files: %s',
+                get_formatted_time(start_time, end_time))
     print(
         "Next up, creating a smart index of this book so I can quickly find information..."
     )
@@ -94,10 +100,11 @@ def create_and_persist_vector_store(file_path, embeddings, persist_directory):
         documents=splits, embedding=embeddings, persist_directory=persist_directory
     )
     end_time = time.perf_counter()
-    execution_time = end_time - start_time
 
-    logger.info('Time taken to create store: %s', {
-                str(datetime.timedelta(seconds=execution_time))})
+    print('Time taken to create store: %s',
+          get_formatted_time(start_time, end_time))
+    logger.info('Time taken to create store: %s',
+                get_formatted_time(start_time, end_time))
 
     return vector_store
 
@@ -125,7 +132,7 @@ def get_llm(model_name: str) -> ChatOllama:
     """Initializes and returns the Ollama chat model."""
     print(f"Initializing LLM: {model_name}")
     # Assumes Ollama is running and serving the specified chat model
-    return ChatOllama(model=model_name)
+    return ChatOllama(model=model_name, temperature=0.1)
 
 
 def create_history_aware_retriever_chain(llm: ChatOllama, retriever: Chroma) -> Runnable:
@@ -159,7 +166,7 @@ You are an expert Question Answering assistant. You have been provided with the 
 5.  **Do not use any external knowledge, prior training data, or information outside of the provided book text.** Your knowledge is strictly limited to this document.
 6.  **If the answer cannot be found within the book text, state clearly that the book does not contain the information needed to answer the question.** Do not attempt to guess or fabricate an answer.
 7.  **Cite specific parts of the text to support your answer whenever possible (optional, but helpful).**
-
+8.  **Keep the answers short and precise**
 **[BEGIN BOOK TEXT]**
 
 ---
@@ -196,9 +203,10 @@ def run_chat_loop(rag_chain: Runnable):
             user_input = input("You: ")
             if user_input.strip == '':
                 continue
-            if user_input.lower() in ['bye', 'quit']:
+            if user_input.lower() in end_phrase:
                 break
 
+            processing_start = time.perf_counter()
             # Invoke the RAG chain
             response = rag_chain.invoke(
                 {"input": user_input, "chat_history": chat_history})
@@ -207,6 +215,10 @@ def run_chat_loop(rag_chain: Runnable):
             ai_response = response.get(
                 'answer', 'Sorry, I could not generate a response.')
             print(f"AI: {ai_response}")
+            processing_end = time.perf_counter()
+
+            print('Time taken: %s' % get_formatted_time(
+                processing_start, processing_end))
 
             # Update chat history
             chat_history.append(HumanMessage(content=user_input))
