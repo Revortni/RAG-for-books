@@ -1,0 +1,50 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.eggs/
+dist/
+sdist/
+*.egg-info/
+*.egg
+*.whl
+*.zip
+lib/
+lib64/
+
+# PyInstaller
+#  Usually these files are written into a dist/ directory.
+#  See the PyInstaller docs for more details.
+# https://pyinstaller.readthedocs.io/en/stable/when-things-go-wrong.html
+# _MEI*
+#
+# # Poetry
+poetry.lock
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# OS generated files #
+.DS_Store
+Thumbs.db
+
+# Vector db
+chroma_db/*
+
+# environment
+.env
+
+# log files
+
+*.log
