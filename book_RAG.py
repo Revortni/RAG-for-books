@@ -106,6 +106,12 @@ def setup_vector_store(file_path, embeddings: HuggingFaceEmbeddings, store_path:
         )
         print("Index loaded successfully! Ready to answer your questions.")
     else:
+        logger.info(
+            '-----------------------------------------------------------------------')
+        logger.info(
+            'Processing %s using model: %s', file_path, config.EMBEDDING_MODEL_NAME)
+        logger.info(
+            '-----------------------------------------------------------------------')
         vectorstore = create_and_persist_vector_store(
             file_path=file_path, embeddings=embeddings, persist_directory=store_path)
         print(
