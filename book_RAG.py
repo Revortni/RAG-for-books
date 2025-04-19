@@ -1,6 +1,5 @@
 import os
 from typing import List
-import datetime
 import time
 
 from langchain_ollama import ChatOllama
@@ -19,34 +18,11 @@ from langchain.chains import create_history_aware_retriever, create_retrieval_ch
 
 
 from logger.logger import get_logger
+from utils.formatter import get_formatted_time
 import config
 
 
 logger = get_logger(log_file_path="./bookRAG.log")
-
-
-# Directory for persistent vector store
-VECTOR_STORE_ROOT = "./chroma_db"
-CHUNK_SIZE = 1000
-CHUNK_OVERLAP = 200
-
-
-def get_formatted_time(start, end):
-    diff = end - start
-    time_obj = datetime.timedelta(seconds=diff)
-    diff = int(time_obj.total_seconds())
-    parts = []
-    if diff >= 3600:
-        h, diff = divmod(diff, 3600)
-        parts.append(f'{h}h')
-    if diff >= 60:
-        m, diff = divmod(diff, 60)
-        parts.append(f'{m}m')
-    if diff > 0 or not parts:
-        parts.append(f'{diff}s')
-    return ' '.join(parts)
-
-# --- Modular Functions ---
 
 
 def load_pdf(pdf_path: str) -> List[Document]:
@@ -89,7 +65,7 @@ def create_and_persist_vector_store(file_path, embeddings, persist_directory):
     """Creates a Chroma vector store from a PDF and persists it to disk."""
     start_time = time.perf_counter()
     docs = load_pdf(file_path)
-    splits = split_documents(docs, CHUNK_SIZE, CHUNK_OVERLAP)
+    splits = split_documents(docs, config.CHUNK_SIZE, config.CHUNK_OVERLAP)
     end_time = time.perf_counter()
 
     logger.info('Time taken to load and split files: %s',
@@ -142,7 +118,7 @@ def get_llm(model_name: str) -> ChatOllama:
     """Initializes and returns the Ollama chat model."""
     print(f"Initializing LLM: {model_name}")
     # Assumes Ollama is running and serving the specified chat model
-    return ChatOllama(model=model_name, temperature=0.1)
+    return ChatOllama(model=model_name, temperature=0)
 
 
 def create_history_aware_retriever_chain(llm: ChatOllama, retriever: Chroma) -> Runnable:
@@ -246,7 +222,7 @@ def main():
     """Main function to set up and run the RAG pipeline."""
     try:
         file_name = config.PDF_PATH.rsplit('/', maxsplit=1)[-1]
-        vector_store_path = f'{VECTOR_STORE_ROOT}/{config.EMBEDDING_MODEL_NAME}/{file_name}'
+        vector_store_path = f'{config.VECTOR_STORE_ROOT}/{config.EMBEDDING_MODEL_NAME}/{file_name}'
 
         embeddings = get_embeddings_model(config.EMBEDDING_MODEL_NAME)
 
