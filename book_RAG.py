@@ -34,8 +34,17 @@ CHUNK_OVERLAP = 200
 def get_formatted_time(start, end):
     diff = end - start
     time_obj = datetime.timedelta(seconds=diff)
-
-    return f'{int(time_obj.total_seconds())}s'
+    diff = int(time_obj.total_seconds())
+    parts = []
+    if diff >= 3600:
+        h, diff = divmod(diff, 3600)
+        parts.append(f'{h}h')
+    if diff >= 60:
+        m, diff = divmod(diff, 60)
+        parts.append(f'{m}m')
+    if diff > 0 or not parts:
+        parts.append(f'{diff}s')
+    return ' '.join(parts)
 
 # --- Modular Functions ---
 
@@ -202,7 +211,7 @@ def run_chat_loop(rag_chain: Runnable):
     while True:
         try:
             user_input = input("You: ")
-            if user_input.strip == '':
+            if user_input.strip() == '':
                 continue
             if user_input.lower() in end_phrase:
                 break
