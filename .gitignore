@@ -40,7 +40,7 @@ venv.bak/
 Thumbs.db
 
 # Vector db
-chroma_db/*
+/chroma_db
 
 # environment
 .env
