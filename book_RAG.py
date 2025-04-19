@@ -47,7 +47,8 @@ def load_pdf(pdf_path: str) -> List[Document]:
         raise FileNotFoundError(f"PDF file not found at {pdf_path}")
     loader = PyPDFLoader(pdf_path)
     docs = loader.load()
-    print(f"Loaded {len(docs)} pages.")
+    file_name = pdf_path.rsplit('/')[-1]
+    print(f"Loaded {len(docs)} pages from {file_name}")
     return docs
 
 
